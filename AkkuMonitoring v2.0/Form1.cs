@@ -92,17 +92,22 @@ namespace AkkuMonitoring_v2._0
                         {
                             if (RemainingPercent == 100)
                             {
-                                if (ChargeStatus.IndexOf("Charging") == -1 && WarningAlreadyGiven == false)
+                                if (ChargeStatus.IndexOf("NoSystemBattery") != -1 && WarningAlreadyGiven == false)
                                 {
-                                    //MessageBox.Show("Akku aufgeladen!");
-                                    MessageBoxAPI(0, "Akku aufgeladen!", "Warning", MB_SYSTEMMODAL | MB_ICONEXCLAMATION);
-                                    //DateOfStart = DateTime.Now;
-                                    Runtime = 0;
+                                    //do nothing
                                     WarningAlreadyGiven = true;
+                                    Runtime = 0;
                                 }
                                 else
                                 {
-
+                                    if (ChargeStatus.IndexOf("Charging") == -1 && WarningAlreadyGiven == false)
+                                    {
+                                        //MessageBox.Show("Akku aufgeladen!");
+                                        MessageBoxAPI(0, "Akku aufgeladen!", "Warning", MB_SYSTEMMODAL | MB_ICONEXCLAMATION);
+                                        //DateOfStart = DateTime.Now;
+                                        Runtime = 0;
+                                        WarningAlreadyGiven = true;
+                                    }
                                 }
                             }
                             else
@@ -125,14 +130,21 @@ namespace AkkuMonitoring_v2._0
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar1.Value = Convert.ToInt32(e.ProgressPercentage);
-            label1.Text = Convert.ToString(e.ProgressPercentage) + "%\n" + ChargeStatus + "\n" + RemainingTime + " left\nSystem Uptime: " + TimeSpan.FromMilliseconds(Runtime);
+            if (RemainingTime.Milliseconds != -1)
+            {
+                label1.Text = Convert.ToString(e.ProgressPercentage) + "%\n" + ChargeStatus + "\n" + RemainingTime + " left\nSystem Uptime: " + TimeSpan.FromMilliseconds(Runtime);
+            }
+            else
+            {
+                label1.Text = Convert.ToString(e.ProgressPercentage) + "%\n" + ChargeStatus + "\nCharging\nSystem Uptime: " + TimeSpan.FromMilliseconds(Runtime);
+            }
         }
 
         private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if ((e.Cancelled == true))
             {
-                label1.Text = "Canceled!";
+                label1.Text = "Cancelled!";
             }
 
             else if (!(e.Error == null))
