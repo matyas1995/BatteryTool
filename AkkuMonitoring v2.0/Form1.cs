@@ -130,7 +130,7 @@ namespace AkkuMonitoring_v2._0
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar1.Value = Convert.ToInt32(e.ProgressPercentage);
-            if (RemainingTime.Milliseconds != -1)
+            if (RemainingTime.Seconds != -1)
             {
                 label1.Text = Convert.ToString(e.ProgressPercentage) + "%\n" + ChargeStatus + "\n" + RemainingTime + " left\nSystem Uptime: " + TimeSpan.FromMilliseconds(Runtime);
             }

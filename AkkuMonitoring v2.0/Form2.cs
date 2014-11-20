@@ -16,6 +16,8 @@ namespace AkkuMonitoring_v2._0
         public int[] BatteryState = new int[360];
         public int[] ProcessorState = new int[360];
         public int RemainingPercent = 0;
+        public int CPUReadSum = 0;      //Average CPU Usage
+        public int CPUReadCount = 0;
         BackgroundWorker Worker = new BackgroundWorker();
         PerformanceCounter cpuCounter;
 
@@ -83,6 +85,7 @@ namespace AkkuMonitoring_v2._0
                 BatteryState[0] = 100 - e.ProgressPercentage;
                 ProcessorState[0] = 100 - Convert.ToInt32(cpuCounter.NextValue());
                 DrawHistory();
+
             }
             catch (Exception ex)
             {
@@ -129,12 +132,20 @@ namespace AkkuMonitoring_v2._0
                 {
                     e.DrawLines(new Pen(Brushes.Red), points);
                 }
+                label1.Text = "Average CPU usage: " + AverageCPU().ToString() + "%";
             }
             catch (Exception ex)
             {
                 throw ex;
-                MessageBox.Show(ex.Message, "DrawHistory");
+                //MessageBox.Show(ex.Message, "DrawHistory");
             }
+        }
+
+        private double AverageCPU()
+        {
+            CPUReadSum += Convert.ToInt32(cpuCounter.NextValue());
+            CPUReadCount += 1;
+            return CPUReadSum / CPUReadCount;
         }
 
         private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
