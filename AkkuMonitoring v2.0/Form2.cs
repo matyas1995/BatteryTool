@@ -16,10 +16,10 @@ namespace AkkuMonitoring_v2._0
         public int[] BatteryState = new int[360];
         public int[] ProcessorState = new int[360];
         public int RemainingPercent = 0;
-        public int CPUReadSum = 0;      //Average CPU Usage
-        public int CPUReadCount = 0;
+        int CPUReadSum = 0;      //Average CPU Usage
+        int CPUReadCount = 0;
         BackgroundWorker Worker = new BackgroundWorker();
-        PerformanceCounter cpuCounter;
+        static PerformanceCounter cpuCounter;
 
         public Form2()
         {
@@ -84,6 +84,7 @@ namespace AkkuMonitoring_v2._0
                 }
                 BatteryState[0] = 100 - e.ProgressPercentage;
                 ProcessorState[0] = 100 - Convert.ToInt32(cpuCounter.NextValue());
+                Thread.Sleep(500);
                 DrawHistory();
 
             }
@@ -145,6 +146,7 @@ namespace AkkuMonitoring_v2._0
         {
             CPUReadSum += Convert.ToInt32(cpuCounter.NextValue());
             CPUReadCount += 1;
+            MessageBox.Show(CPUReadSum.ToString() + "\n" + CPUReadCount.ToString());
             return CPUReadSum / CPUReadCount;
         }
 
@@ -159,6 +161,7 @@ namespace AkkuMonitoring_v2._0
             cpuCounter.CategoryName = "Processor";
             cpuCounter.CounterName = "% Processor Time";
             cpuCounter.InstanceName = "_Total"; // "_Total" entspricht der gesamten CPU Auslastung, Bei Computern mit mehr als 1 logischem Prozessor: "0" dem ersten Core, "1" dem zweiten...
+            //cpuCounter.BeginInit();
         }
     }
 }
