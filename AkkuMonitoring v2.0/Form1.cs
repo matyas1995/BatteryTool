@@ -165,7 +165,9 @@ namespace AkkuMonitoring_v2._0
             XmlDocument doc = new XmlDocument();
             doc.Load("./Settings.xml");
             XmlNode root = doc.DocumentElement;
-            XmlNode nodeBattery = root.SelectSingleNode("/BatteryLeft");
+            XmlNode nodeBattery = root.SelectSingleNode("/Battery");
+            XmlNodeList InnerNodes = nodeBattery.ChildNodes;
+            nodeBattery = InnerNodes.Item(0);
             nodeBattery.InnerText = Akku.ToString();
             doc.Save("./Settings.xml");
             WarningAlreadyGiven = false;
@@ -176,7 +178,9 @@ namespace AkkuMonitoring_v2._0
             XmlDocument doc = new XmlDocument();
             doc.Load("./Settings.xml");
             XmlNode root = doc.DocumentElement;
-            XmlNode nodeBattery = root.SelectSingleNode("/BatteryLeft");
+            XmlNode nodeBattery = root.SelectSingleNode("/Battery");
+            XmlNodeList InnerNodes = nodeBattery.ChildNodes;
+            nodeBattery = InnerNodes.Item(0);
             Akku = Convert.ToInt32(nodeBattery.InnerText);
             numericUpDown1.Value = Akku;
         }

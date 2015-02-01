@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using System.Xml;
 
 namespace AkkuMonitoring_v2._0
 {
@@ -16,6 +17,7 @@ namespace AkkuMonitoring_v2._0
         public int[] BatteryState = new int[360];
         public int[] ProcessorState = new int[360];
         public int RemainingPercent = 0;
+        public int AverageCPUPerformance = 0; //Average overall CPU usage (saved in XML)
         int CPUReadSum = 0;      //Average CPU Usage
         int CPUReadCount = 0;
         BackgroundWorker Worker = new BackgroundWorker();
@@ -84,7 +86,7 @@ namespace AkkuMonitoring_v2._0
                 }
                 BatteryState[0] = 100 - e.ProgressPercentage;
                 ProcessorState[0] = 100 - Convert.ToInt32(cpuCounter.NextValue());
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
                 DrawHistory();
 
             }
@@ -133,7 +135,9 @@ namespace AkkuMonitoring_v2._0
                 {
                     e.DrawLines(new Pen(Brushes.Red), points);
                 }
-                label1.Text = "Average CPU usage: " + AverageCPU().ToString() + "%";
+                double CPU = AverageCPU();
+                double averageCPU = LoadXmlData();
+                label1.Text = "Average CPU usage (current session): " + CPU.ToString() + "%\nAverage CPU usage (overall): " + averageCPU.ToString() + "%";
             }
             catch (Exception ex)
             {
@@ -144,9 +148,34 @@ namespace AkkuMonitoring_v2._0
 
         private double AverageCPU()
         {
-            CPUReadSum += Convert.ToInt32(cpuCounter.NextValue());
+            int currentCPU = Convert.ToInt32(cpuCounter.NextValue());
+            CPUReadSum += currentCPU;
             CPUReadCount += 1;
-            MessageBox.Show(CPUReadSum.ToString() + "\n" + CPUReadCount.ToString());
+            int Counts = 0;
+            int CPU = 0;
+            //MessageBox.Show(CPUReadSum.ToString() + "\n" + CPUReadCount.ToString());
+
+            XmlDocument doc = new XmlDocument();
+            doc.Load("./Settings.xml");
+            XmlNode root = doc.DocumentElement;
+            XmlNode nodeBattery = root.SelectSingleNode("/Battery");
+            XmlNodeList InnerNodes = nodeBattery.ChildNodes;
+            nodeBattery = InnerNodes.Item(2);
+
+            Counts = Convert.ToInt32(nodeBattery.InnerText) + 1;
+
+            nodeBattery = InnerNodes.Item(1);
+
+            CPU = Convert.ToInt32(nodeBattery.InnerText) + currentCPU;
+
+            AverageCPUPerformance = CPU / Counts;
+
+            nodeBattery.InnerText = CPU.ToString();
+            XmlNode Counter = InnerNodes.Item(2);
+            Counter.InnerText = Counts.ToString();
+
+            doc.Save("./Settings.xml");
+
             return CPUReadSum / CPUReadCount;
         }
 
@@ -162,6 +191,20 @@ namespace AkkuMonitoring_v2._0
             cpuCounter.CounterName = "% Processor Time";
             cpuCounter.InstanceName = "_Total"; // "_Total" entspricht der gesamten CPU Auslastung, Bei Computern mit mehr als 1 logischem Prozessor: "0" dem ersten Core, "1" dem zweiten...
             //cpuCounter.BeginInit();
+        }
+
+        private double LoadXmlData()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load("./Settings.xml");
+            XmlNode root = doc.DocumentElement;
+            XmlNode nodeBattery = root.SelectSingleNode("/Battery");
+            XmlNodeList InnerNodes = nodeBattery.ChildNodes;
+            nodeBattery = InnerNodes.Item(1);
+            int CPUPerformance = Convert.ToInt32(nodeBattery.InnerText);
+            nodeBattery = nodeBattery = InnerNodes.Item(2);
+            int Counter = Convert.ToInt32(nodeBattery.InnerText);
+            return CPUPerformance / Counter;
         }
     }
 }
